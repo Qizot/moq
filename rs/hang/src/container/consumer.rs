@@ -210,7 +210,8 @@ impl GroupReader {
 				_ => (),
 			}
 
-			match self.read().await {
+			// TODO check if the buffers can come out of order?
+			match self.read_unbuffered().await {
 				Ok(Some(frame)) => self.buffered.push_back(frame),
 				// Otherwise block forever so we don't return from FuturesUnordered
 				_ => std::future::pending().await,

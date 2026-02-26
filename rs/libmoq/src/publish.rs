@@ -27,17 +27,17 @@ impl Publish {
 	pub fn get(&self, id: Id) -> Result<&moq_lite::BroadcastProducer, Error> {
 		self.broadcasts
 			.get(id)
-			.ok_or(Error::NotFound)
+			.ok_or(Error::BroadcastNotFound)
 			.map(|(broadcast, _)| broadcast)
 	}
 
 	pub fn close(&mut self, broadcast: Id) -> Result<(), Error> {
-		self.broadcasts.remove(broadcast).ok_or(Error::NotFound)?;
+		self.broadcasts.remove(broadcast).ok_or(Error::BroadcastNotFound)?;
 		Ok(())
 	}
 
 	pub fn media_ordered(&mut self, broadcast: Id, format: &str, mut init: &[u8]) -> Result<Id, Error> {
-		let (broadcast, catalog) = self.broadcasts.get(broadcast).ok_or(Error::NotFound)?;
+		let (broadcast, catalog) = self.broadcasts.get(broadcast).ok_or(Error::BroadcastNotFound)?;
 
 		let format = import::DecoderFormat::from_str(format).map_err(|_| Error::UnknownFormat(format.to_string()))?;
 		let mut decoder = import::Decoder::new(broadcast.clone(), catalog.clone(), format);
@@ -61,7 +61,7 @@ impl Publish {
 		mut data: &[u8],
 		timestamp: hang::container::Timestamp,
 	) -> Result<(), Error> {
-		let media = self.media.get_mut(media).ok_or(Error::NotFound)?;
+		let media = self.media.get_mut(media).ok_or(Error::MediaNotFound)?;
 
 		media
 			.decode_frame(&mut data, Some(timestamp))
@@ -77,7 +77,7 @@ impl Publish {
 	}
 
 	pub fn media_close(&mut self, media: Id) -> Result<(), Error> {
-		self.media.remove(media).ok_or(Error::NotFound)?;
+		self.media.remove(media).ok_or(Error::MediaNotFound)?;
 		Ok(())
 	}
 }
